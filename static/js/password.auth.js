@@ -1,5 +1,6 @@
 'use strict';
 /* Handle for register form submission */
+/*
 $('#register').submit(function(event) {
     event.preventDefault();
 
@@ -31,8 +32,10 @@ $('#register').submit(function(event) {
         }
     })
 })
+*/
 
 /* Handle for login form submission */
+/*
 $('#login').submit(function(event) {
     event.preventDefault();
 
@@ -62,5 +65,6 @@ $('#login').submit(function(event) {
         }
     })
 })
+*/
 
 
