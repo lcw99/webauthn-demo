@@ -15,9 +15,17 @@ $('#register').submit(function(event) {
     getMakeCredentialsChallenge({username, name})
         .then((response) => {
             let publicKey = preformatMakeCredReq(response);
+            publicKey.authenticatorSelection = {
+                "authenticatorAttachment": "cross-platform",
+                "requireResidentKey": true,
+                "userVerification": "preferred"
+            };
+            console.log(publicKey);
+
             return navigator.credentials.create({ publicKey })
         })
 		    .then((response) => {
+                console.log(response);
 		        let makeCredResponse = publicKeyCredentialToJSON(response);
 		        return sendWebAuthnResponse(makeCredResponse)
 		    })
@@ -44,10 +52,18 @@ $('#login').submit(function(event) {
 
     getGetAssertionChallenge({username})
         .then((response) => {
+            console.log("response.challenge=");
+            console.log(response.challenge);
             let publicKey = preformatGetAssertReq(response);
             console.log("publicKey=");
             console.log(publicKey);
-            return navigator.credentials.get({ publicKey })
+            //var chalArray8 = new Uint8Array(publicKey.challenge);
+            //chalArray8.fill(1, 0, 32);
+            publicKey.timeout = 60000;
+            console.log(publicKey);
+            //debugger
+            var resp = navigator.credentials.get({ publicKey })
+            return resp;
         })
         .then((response) => {
             let getAssertionResponse = publicKeyCredentialToJSON(response);
@@ -64,6 +80,24 @@ $('#login').submit(function(event) {
         })
         .catch((error) => alert(error))
 })
+
+let getGetAssertionChallenge = (formBody) => {
+    return fetch('/webauthn/login', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formBody)
+    })
+    .then((response) => response.json())
+    .then((response) => {
+        if(response.status !== 'ok')
+            throw new Error(`Server responed with error. The message is: ${response.message}`);
+
+        return response
+    })
+}
 
 let getMakeCredentialsChallenge = (formBody) => {
 		console.log("getMakeCredentialsChallenge");
@@ -106,20 +140,3 @@ let sendWebAuthnResponse = (body) => {
     })
 }
 
-let getGetAssertionChallenge = (formBody) => {
-    return fetch('/webauthn/login', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formBody)
-    })
-    .then((response) => response.json())
-    .then((response) => {
-        if(response.status !== 'ok')
-            throw new Error(`Server responed with error. The message is: ${response.message}`);
-
-        return response
-    })
-}
